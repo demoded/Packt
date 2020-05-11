@@ -1,30 +1,36 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+
 
 namespace MvcMusicStore.Models
 {
     public partial class ShoppingCart
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
+        MusicStoreEntities storeDB;
+
+        public ShoppingCart(MusicStoreEntities _storeDB)
+        {
+            storeDB = _storeDB;
+        }
 
         string ShoppingCartId { get; set; }
 
         public const string CartSessionKey = "CartId";
 
-        public static ShoppingCart GetCart(HttpContextBase context)
+        public static ShoppingCart GetCart(HttpContext context, MusicStoreEntities _storeDB)
         {
-            var cart = new ShoppingCart();
+            var cart = new ShoppingCart(_storeDB);
             cart.ShoppingCartId = cart.GetCartId(context);
             return cart;
         }
 
         // Helper method to simplify shopping cart calls
-        public static ShoppingCart GetCart(Controller controller)
+        public static ShoppingCart GetCart(Controller controller, MusicStoreEntities _storeDB)
         {
-            return GetCart(controller.HttpContext);
+            return GetCart(controller.HttpContext, _storeDB);
         }
 
         public void AddToCart(Album album)
@@ -163,13 +169,14 @@ cart => cart.CartId == ShoppingCartId
         }
 
         // We're using HttpContextBase to allow access to cookies.
-        public string GetCartId(HttpContextBase context)
+        // MIGRATION IMPACT
+        public string GetCartId(HttpContext context)
         {
-            if (context.Session[CartSessionKey] == null)
+            if (context.Session.GetString(CartSessionKey) == null)
             {
                 if (!string.IsNullOrWhiteSpace(context.User.Identity.Name))
                 {
-                    context.Session[CartSessionKey] = context.User.Identity.Name;
+                    context.Session.SetString(CartSessionKey, context.User.Identity.Name);
                 }
                 else
                 {
@@ -177,11 +184,11 @@ cart => cart.CartId == ShoppingCartId
                     Guid tempCartId = Guid.NewGuid();
 
                     // Send tempCartId back to client as a cookie
-                    context.Session[CartSessionKey] = tempCartId.ToString();
+                    context.Session.SetString(CartSessionKey, tempCartId.ToString());
                 }
             }
 
-            return context.Session[CartSessionKey].ToString();
+            return context.Session.GetString(CartSessionKey);
         }
 
         // When a user has logged in, migrate their shopping cart to

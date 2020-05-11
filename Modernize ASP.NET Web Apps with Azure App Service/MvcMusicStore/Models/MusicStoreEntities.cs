@@ -1,4 +1,5 @@
-﻿using System.Data.Entity;
+﻿using Microsoft.EntityFrameworkCore; // MIGRATION IMPACT
+using Microsoft.Extensions;
 
 namespace MvcMusicStore.Models
 {
@@ -10,5 +11,20 @@ namespace MvcMusicStore.Models
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderDetail> OrderDetails { get; set; }
+
+        public MusicStoreEntities(DbContextOptions<MusicStoreEntities> options)
+            : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Album>().ToTable("Album");
+            modelBuilder.Entity<Genre>().ToTable("Genre");
+            modelBuilder.Entity<Artist>().ToTable("Artist");
+            modelBuilder.Entity<Cart>().ToTable("Cart");
+            modelBuilder.Entity<Order>().ToTable("Order");
+            modelBuilder.Entity<OrderDetail>().ToTable("OrderDetail");
+        }
     }
 }

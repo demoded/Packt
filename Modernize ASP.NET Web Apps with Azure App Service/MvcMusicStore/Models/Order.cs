@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using System.Web.Mvc;
 
 namespace MvcMusicStore.Models
 {
-    [Bind(Exclude = "OrderId")]
+    [Bind] // MIGRATION
     public partial class Order
     {
+        [BindNever] // MIGRATION
         [ScaffoldColumn(false)]
         public int OrderId { get; set; }
 
@@ -62,6 +64,6 @@ namespace MvcMusicStore.Models
         [ScaffoldColumn(false)]
         public decimal Total { get; set; }
 
-        public List<OrderDetail> OrderDetails { get; set; }
+        public virtual List<OrderDetail> OrderDetails { get; set; }
     }
 }

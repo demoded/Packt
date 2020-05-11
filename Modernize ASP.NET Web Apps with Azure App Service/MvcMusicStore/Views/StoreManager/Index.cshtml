@@ -1,17 +1,19 @@
 ﻿@model IEnumerable<MvcMusicStore.Models.Album>
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
-@helper Truncate(string input, int length)
-{
-    if (input.Length <= length) {
-        @input
-    } else {
-        @input.Substring(0, length)<text>...</text>
+@functions {
+    string Truncate(string input, int length)
+    {
+        if (input.Length <= length) {
+            return input;
+        } else {
+            return input.Substring(0, length) + "...";
+        }
     }
 }
-
 @{
-    ViewBag.Title = "Index";
-}
+        ViewBag.Title = "Index";
+    }
 
 <h2>Index</h2>
 
@@ -35,26 +37,27 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Genre.Name)
-        </td>
-        <td>
-            @Truncate(item.Artist.Name, 25)
-        </td>
-        <td>
-            @Truncate(item.Title, 25)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Price)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AlbumId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AlbumId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AlbumId })
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Genre.Name)
+            </td>
+            <td>
+                @Truncate(item.Artist.Name, 25)
+            </td>
+            <td>
+                @Truncate(item.Title, 25)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Price)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.AlbumId }) |
+                @Html.ActionLink("Details", "Details", new { id = item.AlbumId }) |
+                @Html.ActionLink("Delete", "Delete", new { id = item.AlbumId })
+            </td>
+        </tr>
+    }
 
 </table>

@@ -2,15 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MvcMusicStore.Models;
 
 namespace MvcMusicStore.Controllers
 {
     public class StoreController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
+        MusicStoreEntities storeDB;
 
+        public StoreController(MusicStoreEntities _storeDB)
+        {
+            storeDB = _storeDB;
+        }
         //
         // GET: /Store/
 
@@ -38,21 +43,21 @@ namespace MvcMusicStore.Controllers
 
         public ActionResult Details(int id)
         {
-            var album = storeDB.Albums.Find(id);
+            var album = storeDB.Albums.Where(a => a.AlbumId == id).FirstOrDefault();
 
             return View(album);
         }
 
         //
         // GET: /Store/GenreMenu
+        //// [ChildActionOnly] // MIGRATION
+        //public ActionResult GenreMenu()
+        //{
+        //    var genres = storeDB.Genres.ToList();
 
-        [ChildActionOnly]
-        public ActionResult GenreMenu()
-        {
-            var genres = storeDB.Genres.ToList();
+        //    return PartialView(genres);
+        //}
 
-            return PartialView(genres);
-        }
 
     }
 }

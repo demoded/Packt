@@ -1,5 +1,6 @@
 ﻿using System.Linq;
-using System.Web.Mvc;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Mvc;
 using MvcMusicStore.Models;
 using MvcMusicStore.ViewModels;
 
@@ -7,14 +8,19 @@ namespace MvcMusicStore.Controllers
 {
     public class ShoppingCartController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
+        MusicStoreEntities storeDB;
+
+        public ShoppingCartController(MusicStoreEntities _storeDB)
+        {
+            storeDB = _storeDB;
+        }
 
         //
         // GET: /ShoppingCart/
 
         public ActionResult Index()
         {
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+            var cart = ShoppingCart.GetCart(this.HttpContext, storeDB);
 
             // Set up our ViewModel
             var viewModel = new ShoppingCartViewModel
@@ -38,7 +44,7 @@ namespace MvcMusicStore.Controllers
                 .Single(album => album.AlbumId == id);
 
             // Add it to the shopping cart
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+            var cart = ShoppingCart.GetCart(this.HttpContext, storeDB);
 
             cart.AddToCart(addedAlbum);
 
@@ -48,14 +54,13 @@ namespace MvcMusicStore.Controllers
 
         //
         // AJAX: /ShoppingCart/RemoveFromCart/5
-
         [HttpPost]
         public ActionResult RemoveFromCart(int id)
         {
             // Remove the item from the cart
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+            var cart = ShoppingCart.GetCart(this.HttpContext, storeDB);
 
-            // Get the name of the album to display confirmation
+            //// Get the name of the album to display confirmation
             string albumName = storeDB.Carts
                 .Single(item => item.RecordId == id).Album.Title;
 
@@ -65,7 +70,7 @@ namespace MvcMusicStore.Controllers
             // Display the confirmation message
             var results = new ShoppingCartRemoveViewModel
             {
-                Message = Server.HtmlEncode(albumName) +
+                Message = HtmlEncoder.Default.Encode(albumName) +
                     " has been removed from your shopping cart.",
                 CartTotal = cart.GetTotal(),
                 CartCount = cart.GetCount(),
@@ -74,19 +79,20 @@ namespace MvcMusicStore.Controllers
             };
 
             return Json(results);
+            //return RedirectToAction("Index");
         }
 
         //
         // GET: /ShoppingCart/CartSummary
 
-        [ChildActionOnly]
-        public ActionResult CartSummary()
-        {
-            var cart = ShoppingCart.GetCart(this.HttpContext);
+        ////[ChildActionOnly] MIGRATION!
+        //public ActionResult CartSummary()
+        //{
+        //    var cart = ShoppingCart.GetCart(this.HttpContext, storeDB);
 
-            ViewData["CartCount"] = cart.GetCount();
+        //    ViewData["CartCount"] = cart.GetCount();
 
-            return PartialView("CartSummary");
-        }
+        //    return PartialView("CartSummary");
+        //}
     }
 }

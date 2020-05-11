@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
+﻿
 using System.Linq;
 using System.Web;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using MvcMusicStore.Models;
 
 namespace MvcMusicStore.Controllers
@@ -12,8 +11,12 @@ namespace MvcMusicStore.Controllers
    // [Authorize(Roles = "Administrator")]
     public class StoreManagerController : Controller
     {
-        private MusicStoreEntities db = new MusicStoreEntities();
+        MusicStoreEntities db;
 
+        public StoreManagerController(MusicStoreEntities _storeDB)
+        {
+            db = _storeDB;
+        }
         //
         // GET: /StoreManager/
 

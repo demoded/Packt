@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using MvcMusicStore.Models;
 
 namespace MvcMusicStore.Controllers
@@ -8,7 +10,13 @@ namespace MvcMusicStore.Controllers
     [Authorize]
     public class CheckoutController : Controller
     {
-        MusicStoreEntities storeDB = new MusicStoreEntities();
+        MusicStoreEntities storeDB;
+
+        public CheckoutController(MusicStoreEntities _storeDB)
+        {
+            storeDB = _storeDB;
+        }
+
         const string PromoCode = "FREE";
 
         //
@@ -23,10 +31,10 @@ namespace MvcMusicStore.Controllers
         // POST: /Checkout/AddressAndPayment
 
         [HttpPost]
-        public ActionResult AddressAndPayment(FormCollection values)
+        public ActionResult AddressAndPayment(IFormCollection values)
         {
             var order = new Order();
-            TryUpdateModel(order);
+            bool success = TryUpdateModelAsync<Order>(order).Result;
 
             try
             {
@@ -45,7 +53,7 @@ namespace MvcMusicStore.Controllers
                     storeDB.SaveChanges();
 
                     //Process the order
-                    var cart = ShoppingCart.GetCart(this.HttpContext);
+                    var cart = ShoppingCart.GetCart(this.HttpContext, storeDB);
                     cart.CreateOrder(order);
 
                     return RedirectToAction("Complete",
