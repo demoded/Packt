@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>204c6655-f895-4548-af66-1f8979752f7f</UserSecretsId>
+    <ApplicationInsightsResourceId>/subscriptions/5cd4e868-2009-4ddb-a15f-fd05c4cd928e/resourcegroups/FreeTierResourceGroup/providers/microsoft.insights/components/PacktMusicStoreUpgradeWebApp</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,12 +26,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.12.0" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="2.1.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.5" />
+    <PackageReference Include="Strathweb.AspNetCore.AzureBlobFileProvider" Version="0.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services" />
   </ItemGroup>
 
 </Project>

@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MvcMusicStore.Models;
+using Strathweb.AspNetCore.AzureBlobFileProvider;
 
 namespace MvcMusicStore
 {
@@ -29,7 +30,7 @@ namespace MvcMusicStore
 
             services.Configure<CookiePolicyOptions>(options =>
             {
-                options.CheckConsentNeeded = context => true;
+                //options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
@@ -61,6 +62,8 @@ namespace MvcMusicStore
                 options.LoginPath = "/Account/Logon";
                 options.ExpireTimeSpan = TimeSpan.FromHours(1);
             });
+
+            services.AddApplicationInsightsTelemetry();
 
         }
 
