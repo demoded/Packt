@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -42,13 +43,17 @@ namespace MvcMusicStore
             services.AddMvc();
             services.AddHttpContextAccessor();
 
+            var sqlConnBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("MusicStoreEntities"));
+            sqlConnBuilder.Password = Configuration["MUSICSTORE_DB_PASSWORD"];
             services.AddDbContext<MusicStoreEntities>(options =>
                 options
                     .UseLazyLoadingProxies()
-                    .UseSqlServer(Configuration.GetConnectionString("MusicStoreEntities")));
+                    .UseSqlServer(sqlConnBuilder.ConnectionString));
 
+            sqlConnBuilder = new SqlConnectionStringBuilder(Configuration.GetConnectionString("ASPNETDB"));
+            sqlConnBuilder.Password = Configuration["MUSICSTORE_DB_PASSWORD"];
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("ASPNETDB")));
+                options.UseSqlServer(sqlConnBuilder.ConnectionString));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
@@ -68,10 +73,11 @@ namespace MvcMusicStore
                 ConnectionString = Configuration.GetConnectionString("AzureStorageStaticFiles"),
                 DocumentContainer = "wwwroot"
             };
+            blobOptions.ConnectionString = blobOptions.ConnectionString.Replace("MUSICSTORE_ACCOUNTKEY", Configuration["MUSICSTORE_ACCOUNTKEY"]);
             var azureBlobFileProvider = new AzureBlobFileProvider(blobOptions);
             services.AddSingleton(azureBlobFileProvider);
 
-            services.AddApplicationInsightsTelemetry();
+            services.AddApplicationInsightsTelemetry(Configuration["MUSICSTORE_INSTRUMENTATIONKEY"]);
 
         }
 
