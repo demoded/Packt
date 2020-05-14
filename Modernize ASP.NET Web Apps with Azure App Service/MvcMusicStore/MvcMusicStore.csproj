@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <Content Remove="Views\Shared\_LoginPartial.cshtml" />
+    <Content Remove="wwwroot\favicon.ico" />
   </ItemGroup>
 
   <ItemGroup>

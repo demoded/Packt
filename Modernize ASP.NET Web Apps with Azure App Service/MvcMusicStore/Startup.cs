@@ -63,6 +63,14 @@ namespace MvcMusicStore
                 options.ExpireTimeSpan = TimeSpan.FromHours(1);
             });
 
+            var blobOptions = new AzureBlobOptions
+            {
+                ConnectionString = Configuration.GetConnectionString("AzureStorageStaticFiles"),
+                DocumentContainer = "wwwroot"
+            };
+            var azureBlobFileProvider = new AzureBlobFileProvider(blobOptions);
+            services.AddSingleton(azureBlobFileProvider);
+
             services.AddApplicationInsightsTelemetry();
 
         }
@@ -82,7 +90,14 @@ namespace MvcMusicStore
             }
 
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
+            //app.UseStaticFiles();
+            var blobFileProvider = app.ApplicationServices.GetRequiredService<AzureBlobFileProvider>();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = blobFileProvider,
+                RequestPath = ""
+            });
+
             app.UseCookiePolicy();
             app.UseAuthentication();
             app.UseSession();
