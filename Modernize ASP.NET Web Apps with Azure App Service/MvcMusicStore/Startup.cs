@@ -76,9 +76,6 @@ namespace MvcMusicStore
             blobOptions.ConnectionString = blobOptions.ConnectionString.Replace("MUSICSTORE_ACCOUNTKEY", Configuration["MUSICSTORE_ACCOUNTKEY"]);
             var azureBlobFileProvider = new AzureBlobFileProvider(blobOptions);
             services.AddSingleton(azureBlobFileProvider);
-
-            services.AddApplicationInsightsTelemetry(Configuration["MUSICSTORE_INSTRUMENTATIONKEY"]);
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
