@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using MvcMusicStore.Helpers;
 using MvcMusicStore.Models;
 using System;
 using System.Collections.Generic;
@@ -10,16 +12,16 @@ namespace MvcMusicStore.ViewComponents
 {
     public class GenreMenu : ViewComponent
     {
-        private readonly MusicStoreEntities storeDB;
-        
-        public GenreMenu(MusicStoreEntities _storeDB)
+        ApiHelper apiHelper;
+
+        public GenreMenu(IConfiguration _config)
         {
-            storeDB = _storeDB;
+            apiHelper = new ApiHelper(_config.GetValue<string>("Services:MvcMusicStoreService"));
         }
 
-        public IViewComponentResult Invoke()
+        public async Task<IViewComponentResult> InvokeAsync()
         {
-            var genres = storeDB.Genres.ToList();
+            var genres = await apiHelper.GetAsync<List<Genre>>("/api/Store/Genres");
             return View(genres);
         }
     }

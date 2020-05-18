@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using MvcMusicStore.Helpers;
 using MvcMusicStore.Models;
 
 // For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -10,30 +13,20 @@ namespace MvcMusicStore.Controllers
 {
     public class HomeController : Controller
     {
-        MusicStoreEntities storeDB;
+        ApiHelper apiHelper;
 
-        public HomeController(MusicStoreEntities _storeDB)
+        public HomeController(IConfiguration _config)
         {
-            storeDB = _storeDB;
+            apiHelper = new ApiHelper(_config.GetValue<string>("Services:MvcMusicStoreService"));
         }
-
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            // Get most popular albums
-            var albums = GetTopSellingAlbums(5);
 
+            // Get most popular albums
+            var albums = await apiHelper.GetAsync<List<Album>>("/api/Store/TopSellingAlbums?count=5");
             return View(albums);
         }
 
-        private List<Album> GetTopSellingAlbums(int count)
-        {
-            // Group the order details by album and return
-            // the albums with the highest count
-
-            return storeDB.Albums
-                .OrderByDescending(a => a.OrderDetails.Count())
-                .Take(count)
-                .ToList();
-        }
+        
     }
 }

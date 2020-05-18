@@ -1,12 +1,13 @@
-﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
+﻿@using Microsoft.Extensions.Options
+@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
 <!DOCTYPE html>
 <html>
 <head>
     <title>@ViewBag.Title</title>
-    <link href="@Url.Content("~/Site.css")" rel="stylesheet" 
-        type="text/css" />
-    <script src="@Url.Content("~/Scripts/jquery-3.3.1.js")" 
-        type="text/javascript"></script>
+    <link href="@Url.Content("~/Site.css")" rel="stylesheet"
+          type="text/css" />
+    <script src="@Url.Content("~/Scripts/jquery-3.3.1.js")"
+            type="text/javascript"></script>
     @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
@@ -17,6 +18,21 @@
             <li><a href="@Url.Content("~/Store/")">Store</a></li>
             <li> @await Component.InvokeAsync("CartSummary")</li>
             <li><a href="@Url.Content("~/StoreManager/")">Admin</a></li>
+
+            @if (User.Identity.IsAuthenticated)
+            {
+                
+                var claimsList = User.Claims.Where(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname").ToList();
+                var name = (claimsList.Count > 0 ? claimsList[0].Value : User.Identity.Name);
+                
+
+                <li><span>Hello @name</span></li>
+            }
+            else
+            {
+                <li><span>not authenticated</span></li>
+            }
+
         </ul>
     </div>
 

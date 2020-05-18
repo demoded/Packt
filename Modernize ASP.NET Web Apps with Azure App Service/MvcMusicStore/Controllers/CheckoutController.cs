@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using MusicStore.Models;
+using MvcMusicStore.Helpers;
 using MvcMusicStore.Models;
 
 namespace MvcMusicStore.Controllers
@@ -10,28 +16,25 @@ namespace MvcMusicStore.Controllers
     [Authorize]
     public class CheckoutController : Controller
     {
-        MusicStoreEntities storeDB;
-
-        public CheckoutController(MusicStoreEntities _storeDB)
-        {
-            storeDB = _storeDB;
-        }
-
+        ApiHelper apiHelper;
         const string PromoCode = "FREE";
 
-        //
-        // GET: /Checkout/AddressAndPayment
 
+        public CheckoutController(IConfiguration _config)
+        {
+            apiHelper = new ApiHelper(_config.GetValue<string>("Services:MvcMusicStoreService"));
+        }
+
+       
+      
         public ActionResult AddressAndPayment()
         {
             return View();
         }
 
-        //
-        // POST: /Checkout/AddressAndPayment
-
+      
         [HttpPost]
-        public ActionResult AddressAndPayment(IFormCollection values)
+        public async Task<ActionResult> AddressAndPayment(IFormCollection values)
         {
             var order = new Order();
             bool success = TryUpdateModelAsync<Order>(order).Result;
@@ -45,23 +48,40 @@ namespace MvcMusicStore.Controllers
                 }
                 else
                 {
-                    order.Username = User.Identity.Name;
+                    order.Username = new ContextHelper().GetUsernameFromClaims(this.HttpContext);
                     order.OrderDate = DateTime.Now;
 
-                    //Save Order
-                    storeDB.Orders.Add(order);
-                    storeDB.SaveChanges();
+                    try
+                    {
+                        // get cart items
+                        var cartId = new ShoppingCartHelper(this.HttpContext).GetCartId();
+                        var cartItems = await apiHelper.GetAsync<List<Cart>>("/api/ShoppingCart/CartItems?id=" + cartId);
+                        // avoid sending unuseful data on to the service
+                        cartItems.ForEach((item) =>
+                        {
+                            item.Album.Genre = null;
+                            item.Album.Artist = null;
+                        });
 
-                    //Process the order
-                    var cart = ShoppingCart.GetCart(this.HttpContext, storeDB);
-                    cart.CreateOrder(order);
+                        OrderCreation creation = new OrderCreation()
+                        {
+                            OrderToCreate = order,
+                            CartItems = cartItems
+                        };
+                        int orderId = await apiHelper.PostAsync<OrderCreation, int>("/api/Checkout/AddressAndPayment", creation);
+                        await apiHelper.PostAsync<string>("/api/ShoppingCart/EmptyCart", $"'{cartId}'" );
 
-                    return RedirectToAction("Complete",
-                        new { id = order.OrderId });
+                        return RedirectToAction("Complete", new { id = orderId });
+                    }
+                    catch (Exception)
+                    {
+                        //Log
+                        return View(order);
+                    }
                 }
 
             }
-            catch
+            catch (Exception)
             {
                 //Invalid - redisplay with errors
                 return View(order);
@@ -71,21 +91,26 @@ namespace MvcMusicStore.Controllers
         //
         // GET: /Checkout/Complete
 
-        public ActionResult Complete(int id)
+        public async Task<ActionResult> Complete(int id)
         {
-            // Validate customer owns this order
-            bool isValid = storeDB.Orders.Any(
-                o => o.OrderId == id &&
-                o.Username == User.Identity.Name);
-
-            if (isValid)
+            try
             {
-                return View(id);
-            }
-            else
-            {
+                string username = new ContextHelper().GetUsernameFromClaims(this.HttpContext);
+                bool isValid = await apiHelper.GetAsync<bool>(string.Format("/api/Checkout/Complete?id={0}&username={1}", id, username));
+                if (isValid)
+                {
+                    return View(id);
+                }
+                ViewBag.ErrorText = "Invalid checkout, order not found in the database.";
                 return View("Error");
             }
+            catch (Exception ex)
+            {
+                ViewBag.ErrorText = ex.Message;
+                return View("Error");
+            }
+
+
         }
     }
 }
